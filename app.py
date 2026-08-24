@@ -1,7 +1,10 @@
 from flask import Flask, redirect, jsonify, request
 from config.database import  db, init_db
 from controller.auth_controller import auth_bp
+from controller.ticket_controller import ticket_bp
+from controller.category_controller import category_bp
 from flask_jwt_extended import JWTManager
+from controller.comment_controller import comment_bp
 
 def create_app():
   app = Flask(__name__)
@@ -12,6 +15,9 @@ def create_app():
   app.config["JWT_COOKIE_CSRF_PROJECT"]=False
 
   app.register_blueprint(auth_bp)
+  app.register_blueprint(ticket_bp)
+  app.register_blueprint(category_bp)
+  app.register_blueprint(comment_bp)
 
   jwt = JWTManager(app)
 

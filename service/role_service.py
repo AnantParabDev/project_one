@@ -5,16 +5,13 @@ class RoleService:
   def __init__(self, dao):
     self.role_dao = dao
 
-  def add_role(self,role_id,roles):
-    role=Role(role_id=role_id, roles=roles)
+  def add_role(self,roles):
+    role=Role(roles=roles)
     return self.role_dao.add_role(role)
 
   
   def get_all_role(self):
     return self.role_dao.get_all_role()
-  
-  def get_by_rolename(self, name):
-    return self.role_dao.get_by_rolename(name)
 
   def get_role_by_id(self, r_id):
     return self.role_dao.get_role_by_id(r_id)

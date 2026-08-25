@@ -1,11 +1,23 @@
 from flask import request, Blueprint, jsonify
 from flask_jwt_extended import get_jwt_identity, jwt_required, get_jwt
 
+from dao.history_dao import HistoryDAO
 from dao.ticket_dao import TicketDAO
+
+from service import history_service
+from service.history_service import HistoryService
+from service.ticket_attachment_service import TicketAttachmentService
+
 from service.ticket_service import TicketService
 
-ticket_service = TicketService(TicketDAO())
+import os
+from werkzeug.utils import secure_filename
+from flask import current_app
 
+
+ticket_service = TicketService(TicketDAO())
+ticket_attachment_service = TicketAttachmentService(TicketDAO())
+history_service = HistoryService(HistoryDAO())
 ticket_bp = Blueprint("ticket", __name__)
 
 @ticket_bp.route('/api/tickets', methods=['POST', 'GET'])
@@ -91,8 +103,8 @@ def modify_status(t_id):
 
   data = request.get_json()
   status = data.get("status")
-
-  ticket = ticket_service.update_ticket_status(t_id, status)
+  user_id = get_jwt_identity()
+  ticket = ticket_service.update_ticket_status(t_id, status, user_id)
   
   if ticket:
     return jsonify({
@@ -126,7 +138,69 @@ def modify_priority(t_id):
       "message" : "Priority Modified",
       "ticket" :ticket.to_dict()}), 200
   return jsonify(
-      {
-          "message": "Invalid Ticket ID"
-      }
-  ), 404
+    {
+        "message": "Invalid Ticket ID"
+    }), 404
+
+
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
+
+def allowed_file(filename):
+  if '.' in filename:
+    extension = filename.rsplit('.',1)[1].lower()
+    return extension in ALLOWED_EXTENSIONS
+  return False
+
+@ticket_bp.route('/api/tickets/<int:t_id>/attachments', methods=['POST'])
+@jwt_required()
+def upload_file(t_id):
+  if 'file' not in request.files:
+    return jsonify({
+        "message" : "file part not found"
+    }), 400
+
+  file = request.files['file']
+
+  if file.filename == '':
+    return jsonify({
+        "message" : "File not selected"
+    }), 400
+
+  if file and allowed_file(file.filename):
+    filename = secure_filename(file.filename)
+    save_path= os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+    file.save(save_path)
+
+    uploaded_by = get_jwt_identity()
+
+    attachment = ticket_attachment_service.add_ticket_attachment(file_name=filename,file_path=save_path, ticket_id=t_id, uploaded_by=uploaded_by)
+
+    return jsonify({
+      "message" : "File uploaded successfully",
+      "attachment" : attachment.to_dict()
+    }), 201
+
+  return jsonify({
+    "message" : "File type not allowed"
+  }), 400
+
+
+@ticket_bp.route('/api/tickets/<int:t_id>/history', methods=['GET'])
+@jwt_required()
+def view_history(t_id):
+
+  ticket_history = history_service.get_history_by_ticket(t_id)
+  history_list = [history.to_dict() for history in ticket_history]
+  if ticket_history:
+    return jsonify({
+      "message" : "Ticket History",
+      "ticket_history" : history_list
+    }), 200
+    
+  return jsonify({
+    "message" : "No Tickets Found"
+  }), 404
+
+
+  

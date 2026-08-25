@@ -1,5 +1,4 @@
 from config.database import db
-from dao import comment_dao
 from models.comment import Comment
 
 # from dao.comment_dao import CommentDAO

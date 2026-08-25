@@ -1,14 +1,22 @@
 from flask import Flask, redirect, jsonify, request
 from config.database import  db, init_db
 from controller.auth_controller import auth_bp
+from controller.dashboard_controller import dashboard_bp
 from controller.ticket_controller import ticket_bp
 from controller.category_controller import category_bp
 from flask_jwt_extended import JWTManager
 from controller.comment_controller import comment_bp
+import os
 
 def create_app():
   app = Flask(__name__)
   init_db(app)
+
+  UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
+  os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+  app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+  app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
 
   app.config["JWT_SECRET_KEY"] = "super-secrete-key"
   app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies"]
@@ -18,6 +26,8 @@ def create_app():
   app.register_blueprint(ticket_bp)
   app.register_blueprint(category_bp)
   app.register_blueprint(comment_bp)
+  app.register_blueprint(comment_bp)
+  app.register_blueprint(dashboard_bp)
 
   jwt = JWTManager(app)
 

@@ -12,11 +12,11 @@ class TicketDAO:
     query = Ticket.query  
 
     if status:
-        query = query.filter_by(status=status)
+      query = query.filter_by(status=status)
     if priority:
-        query = query.filter_by(priority=priority)
+      query = query.filter_by(priority=priority)
     if assigned_to:
-        query = query.filter_by(assigned_to=assigned_to)
+      query = query.filter_by(assigned_to=assigned_to)
 
     return query.all()
 
@@ -37,3 +37,12 @@ class TicketDAO:
     db.session.delete(ticket)
     db.session.commit()
     return True
+
+  def get_total_tickets_count(self):
+    return Ticket.query.count()
+
+  def get_count_by_status(self, status_name):
+    return Ticket.query.filter_by(status=status_name).count()
+
+  def get_unassigned_count(self):
+    return Ticket.query.filter_by(assigned_to=None).count()

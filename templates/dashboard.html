@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+
+
+{% block title %}Dashboard — IT Service Desk{% endblock %}
+
+{% block content %}
+
+
+<div class="flex flex-between mb-16">
+    <h1 class="page-heading" style="margin-bottom:0;">
+        {% if role == "ADMIN" %}
+            Admin Dashboard
+        {% elif role == "SUPPORT_AGENT" %}
+            Agent Dashboard
+        {% else %}
+            My Tickets
+        {% endif %}
+    </h1>
+
+    <a href="/tickets/new" class="btn btn-primary">+ New Ticket</a>
+</div>
+
+
+{% if stats %}
+<div class="stat-grid">
+
+    <div class="stat-card">
+        <div class="stat-number">{{ stats.total_tickets }}</div>
+        <div class="stat-label">Total Tickets</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-number" style="color:#1E88E5;">{{ stats.open_tickets }}</div>
+        <div class="stat-label">Open</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-number" style="color:#43A047;">{{ stats.resolved_tickets }}</div>
+        <div class="stat-label">Resolved</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-number" style="color:#FB8C00;">{{ stats.unassigned_tickets }}</div>
+        <div class="stat-label">Unassigned</div>
+    </div>
+
+</div>
+{% endif %}
+
+
+{% if tickets %}
+
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Created</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ticket in tickets %}
+        <tr>
+            
+            <td class="text-muted" style="font-size:0.82rem;">#{{ ticket.ticket_id }}</td>
+
+            
+            <td>
+                <strong>{{ ticket.title | truncate(55) }}</strong>
+            </td>
+
+            
+            <td>
+                {% set s = ticket.status | lower %}
+                {% if s == "open" %}
+                    <span class="badge badge-open">Open</span>
+                {% elif s in ["in progress", "in_progress"] %}
+                    <span class="badge badge-in-progress">In Progress</span>
+                {% elif s == "resolved" %}
+                    <span class="badge badge-resolved">Resolved</span>
+                {% else %}
+                    <span class="badge">{{ ticket.status }}</span>
+                {% endif %}
+            </td>
+
+            
+            <td>
+                {% set p = ticket.priority | lower %}
+                {% if p == "low" %}
+                    <span class="badge badge-low">Low</span>
+                {% elif p == "medium" %}
+                    <span class="badge badge-medium">Medium</span>
+                {% elif p == "high" %}
+                    <span class="badge badge-high">High</span>
+                {% else %}
+                    <span class="badge">{{ ticket.priority }}</span>
+                {% endif %}
+            </td>
+
+            
+            <td class="text-muted" style="font-size:0.82rem; white-space:nowrap;">
+                {{ ticket.created_at.strftime('%d %b %Y') if ticket.created_at else '—' }}
+            </td>
+
+            
+            <td>
+                <a href="/tickets/{{ ticket.ticket_id }}" class="btn btn-secondary btn-sm">
+                    View
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+
+
+<div class="empty-state">
+    
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9
+                 2-2V4c0-1.1-.9-2-2-2zm-5 13l-3-3-3 3-1.4-1.4
+                 3-3-3-3L9 7.6l3 3 3-3 1.4 1.4-3 3 3 3L15 15z"/>
+    </svg>
+    <p>No tickets found.</p>
+    <a href="/tickets/new" class="btn btn-primary">Create your first ticket</a>
+</div>
+
+{% endif %}
+
+{% endblock %}

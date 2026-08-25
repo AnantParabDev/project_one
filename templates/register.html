@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register — IT Service Desk</title>
+
+    <style>
+        /* ---- Reset ------------------------------------------------- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #1565C0 0%, #0D47A1 50%, #1A237E 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* ---- Card -------------------------------------------------- */
+        .auth-card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+            padding: 44px 40px;
+            width: 100%;
+            max-width: 460px;
+        }
+
+        /* Logo / brand */
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .auth-logo svg {
+            width: 52px;
+            height: 52px;
+            fill: #1565C0;
+        }
+
+        .auth-logo h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #1565C0;
+            margin-top: 8px;
+        }
+
+        .auth-logo p {
+            font-size: 0.85rem;
+            color: #78909C;
+            margin-top: 4px;
+        }
+
+        /* ---- Form elements ----------------------------------------- */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #37474F;
+            font-size: 0.88rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid #BBDEFB;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            color: #1a1a2e;
+            background: #FAFAFA;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #1565C0;
+            box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.18);
+            background: #ffffff;
+        }
+
+        /* Small helper text under fields */
+        .form-hint {
+            font-size: 0.78rem;
+            color: #90A4AE;
+            margin-top: 4px;
+        }
+
+        /* ---- Role Selector ----------------------------------------- */
+        .role-info {
+            background: #E3F2FD;
+            border: 1px solid #BBDEFB;
+            border-radius: 6px;
+            padding: 10px 14px;
+            font-size: 0.82rem;
+            color: #37474F;
+            margin-top: 6px;
+        }
+
+        .role-info strong { color: #1565C0; }
+
+        /* ---- Submit Button ----------------------------------------- */
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background-color: #1565C0;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s, box-shadow 0.15s;
+            margin-top: 8px;
+        }
+
+        .btn-submit:hover {
+            background-color: #0D47A1;
+            box-shadow: 0 4px 12px rgba(21, 101, 192, 0.4);
+        }
+
+        /* ---- Error message ----------------------------------------- */
+        .error-msg {
+            background: #FFEBEE;
+            border-left: 4px solid #E53935;
+            color: #C62828;
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-bottom: 18px;
+        }
+
+        /* ---- Login link -------------------------------------------- */
+        .auth-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.88rem;
+            color: #78909C;
+        }
+
+        .auth-footer a {
+            color: #1565C0;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="auth-card">
+
+        
+        <div class="auth-logo">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9
+                         2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+            </svg>
+            <h1>Create Account</h1>
+            <p>Join the IT Service Desk to submit and track tickets</p>
+        </div>
+
+        
+        {% if error %}
+            <div class="error-msg">{{ error }}</div>
+        {% endif %}
+
+        
+        <form action="/register" method="POST" novalidate>
+
+            
+            <div class="form-group">
+                <label for="username">Full Name / Username</label>
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="e.g. Jane Smith"
+                    required
+                    autocomplete="name"
+                >
+            </div>
+
+            
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="you@example.com"
+                    required
+                    autocomplete="email"
+                >
+                <p class="form-hint">Must be unique — used for login.</p>
+            </div>
+
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Choose a strong password"
+                    required
+                    autocomplete="new-password"
+                >
+            </div>
+
+            
+            <div class="form-group">
+                <label for="role_id">Account Role</label>
+                <select id="role_id" name="role_id" required>
+                    <option value="1">User — Submit &amp; track my tickets</option>
+                    <option value="2">Support Agent — Work assigned tickets</option>
+                    <option value="3">Admin — Full system access</option>
+                </select>
+                <div class="role-info">
+                    <strong>User</strong>: create tickets &nbsp;|&nbsp;
+                    <strong>Support Agent</strong>: update status &amp; priority &nbsp;|&nbsp;
+                    <strong>Admin</strong>: assign agents, view stats
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">Create Account</button>
+        </form>
+
+        
+        <div class="auth-footer">
+            Already have an account?
+            <a href="/">Sign in here</a>
+        </div>
+
+    </div>
+
+</body>
+</html>

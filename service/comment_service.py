@@ -1,7 +1,7 @@
 from config.database import db
 from models.comment import Comment
 
-# from dao.comment_dao import CommentDAO
+                                        
 
 
 class CommentService:

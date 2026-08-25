@@ -8,8 +8,8 @@ class Ticket(db.Model):
   description = db.Column(db.Text, nullable=False)
   category_id = db.Column(db.Integer, db.ForeignKey('categories.category_id'), nullable=False)
 
-  created_by=db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)#user
-  assigned_to=db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)#support_agent
+  created_by=db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)     
+  assigned_to=db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)              
 
   status = db.Column(db.String(25), nullable=False, default='open')
   priority= db.Column(db.String(25), nullable=False, default='Low')
@@ -32,6 +32,6 @@ class Ticket(db.Model):
       "status": self.status,
       "priority": self.priority,
       
-      "created_at": self.created_at if self.created_at else None,
-      "due_date": None
+      "created_at": self.created_at.isoformat() if self.created_at else None,
+      "due_date": self.due_date.isoformat() if self.due_date else None
     }

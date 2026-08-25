@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+
+
+{% block title %}#{{ ticket.ticket_id }} {{ ticket.title }} — IT Service Desk{% endblock %}
+
+{% block content %}
+
+
+<a href="/dashboard" class="btn btn-secondary btn-sm" style="margin-bottom:20px; display:inline-block;">
+    ← Back to Dashboard
+</a>
+
+
+<div class="card">
+
+    
+    <div class="flex flex-between" style="flex-wrap:wrap; gap:12px;">
+        <h1 style="font-size:1.4rem; color:#1565C0; font-weight:800;">
+            #{{ ticket.ticket_id }} — {{ ticket.title }}
+        </h1>
+
+        
+        <div class="flex gap-8">
+            
+            {% set s = ticket.status | lower %}
+            {% if s == "open" %}
+                <span class="badge badge-open" style="font-size:0.9rem; padding:5px 14px;">
+                    ● Open
+                </span>
+            {% elif s in ["in progress", "in_progress"] %}
+                <span class="badge badge-in-progress" style="font-size:0.9rem; padding:5px 14px;">
+                    ◑ In Progress
+                </span>
+            {% elif s == "resolved" %}
+                <span class="badge badge-resolved" style="font-size:0.9rem; padding:5px 14px;">
+                    ✓ Resolved
+                </span>
+            {% else %}
+                <span class="badge" style="font-size:0.9rem; padding:5px 14px;">
+                    {{ ticket.status }}
+                </span>
+            {% endif %}
+
+            
+            {% set p = ticket.priority | lower %}
+            {% if p == "low" %}
+                <span class="badge badge-low" style="font-size:0.9rem; padding:5px 14px;">
+                    Low Priority
+                </span>
+            {% elif p == "medium" %}
+                <span class="badge badge-medium" style="font-size:0.9rem; padding:5px 14px;">
+                    Medium Priority
+                </span>
+            {% elif p == "high" %}
+                <span class="badge badge-high" style="font-size:0.9rem; padding:5px 14px;">
+                    ⚠ High Priority
+                </span>
+            {% else %}
+                <span class="badge" style="font-size:0.9rem; padding:5px 14px;">
+                    {{ ticket.priority }}
+                </span>
+            {% endif %}
+        </div>
+    </div>
+
+    
+    <div style="display:flex; gap:28px; margin-top:14px; flex-wrap:wrap;">
+        <p class="text-muted" style="font-size:0.85rem;">
+            <strong>Created by:</strong> User #{{ ticket.created_by }}
+        </p>
+
+        <p class="text-muted" style="font-size:0.85rem;">
+            <strong>Assigned to:</strong>
+            {% if ticket.assigned_to %}
+                Agent #{{ ticket.assigned_to }}
+            {% else %}
+                <em>Unassigned</em>
+            {% endif %}
+        </p>
+        <p class="text-muted" style="font-size:0.85rem;">
+            <strong>Opened:</strong>
+            {{ ticket.created_at.strftime('%d %b %Y, %H:%M') if ticket.created_at else '—' }}
+        </p>
+        <p class="text-muted" style="font-size:0.85rem;">
+            <strong>Due:</strong>
+            {{ ticket.due_date.strftime('%d %b %Y') if ticket.due_date else '—' }}
+        </p>
+    </div>
+
+    <hr class="divider">
+
+    
+    <h3 style="font-size:1rem; color:#37474F; margin-bottom:8px;">Description</h3>
+    <p style="line-height:1.7; white-space:pre-line;">{{ ticket.description }}</p>
+
+</div>
+
+
+
+{% if role in ["ADMIN", "SUPPORT_AGENT"] %}
+
+<div class="card">
+    <p class="card-title">Update Ticket</p>
+
+    
+    <form action="/tickets/{{ ticket.ticket_id }}/update" method="POST">
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+
+            
+            <div class="form-group" style="margin-bottom:0;">
+                <label for="status">Change Status</label>
+                <select id="status" name="status">
+                    <option value="">— No Change —</option>
+                    <option value="open"        {% if ticket.status == 'open'        %}selected{% endif %}>Open</option>
+                    <option value="In Progress" {% if ticket.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                    <option value="resolved"    {% if ticket.status == 'resolved'    %}selected{% endif %}>Resolved</option>
+                </select>
+            </div>
+
+            
+            <div class="form-group" style="margin-bottom:0;">
+                <label for="priority">Change Priority</label>
+                <select id="priority" name="priority">
+                    <option value="">— No Change —</option>
+                    <option value="Low"    {% if ticket.priority == 'Low'    %}selected{% endif %}>Low</option>
+                    <option value="Medium" {% if ticket.priority == 'Medium' %}selected{% endif %}>Medium</option>
+                    <option value="High"   {% if ticket.priority == 'High'   %}selected{% endif %}>High</option>
+                </select>
+            </div>
+
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top:16px;">
+            Save Changes
+        </button>
+    </form>
+
+    {% if role == 'ADMIN' %}
+    <hr class="divider" style="margin:20px 0;">
+    <p style="font-weight:600; margin-bottom:10px; font-size:0.95rem;">Assign Ticket (Admin Only)</p>
+    <form action="/tickets/{{ ticket.ticket_id }}/assign_web" method="POST" style="display:flex; gap:10px; align-items:center;">
+        <select name="assigned_to" required style="padding:6px; border-radius:4px; border:1px solid #ccc;">
+            <option value="">-- Select Support Agent --</option>
+            {% for agent in agents %}
+                <option value="{{ agent.user_id }}">{{ agent.username }} ({{ agent.email }})</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-secondary btn-sm">Assign Agent</button>
+    </form>
+    {% endif %}
+</div>
+
+{% endif %}
+
+
+
+<div class="card">
+    <p class="card-title">
+        Comments
+        <span class="text-muted" style="font-weight:400; font-size:0.9rem;">
+            ({{ comments | length }})
+        </span>
+    </p>
+
+    {% if comments %}
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:14px;">
+            {% for comment in comments %}
+            <li style="
+                background:#F0F6FF;
+                border-left:4px solid #90CAF9;
+                padding:12px 16px;
+                border-radius:0 6px 6px 0;
+            ">
+                
+                <p style="font-size:0.8rem; color:#78909C; margin-bottom:6px;">
+                    <strong style="color:#1565C0;">User #{{ comment.user_id }}</strong>
+                    &nbsp;&mdash;&nbsp;
+                    {{ comment.created_at.strftime('%d %b %Y, %H:%M') if comment.created_at else '' }}
+                </p>
+                
+                <p style="line-height:1.6;">{{ comment.comment }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted" style="font-style:italic; padding:8px 0;">
+            No comments yet. Be the first to comment.
+        </p>
+    {% endif %}
+
+    <hr class="divider">
+
+    
+    <h4 style="font-size:0.95rem; color:#37474F; margin-bottom:12px;">
+        Add a Comment
+    </h4>
+
+    
+    <form action="/tickets/{{ ticket.ticket_id }}/comments" method="POST">
+        <div class="form-group" style="margin-bottom:12px;">
+            <textarea
+                name="comment"
+                rows="3"
+                placeholder="Write your comment here…"
+                required
+            ></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Post Comment</button>
+    </form>
+
+</div>
+
+{% endblock %}

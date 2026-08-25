@@ -7,6 +7,9 @@ from controller.category_controller import category_bp
 from flask_jwt_extended import JWTManager
 from controller.comment_controller import comment_bp
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def create_app():
   app = Flask(__name__)
@@ -18,14 +21,13 @@ def create_app():
   app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
   app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
 
-  app.config["JWT_SECRET_KEY"] = "super-secrete-key"
+  app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY")
   app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies"]
-  app.config["JWT_COOKIE_CSRF_PROJECT"]=False
+  app.config["JWT_COOKIE_CSRF_PROTECT"]=False
 
   app.register_blueprint(auth_bp)
   app.register_blueprint(ticket_bp)
   app.register_blueprint(category_bp)
-  app.register_blueprint(comment_bp)
   app.register_blueprint(comment_bp)
   app.register_blueprint(dashboard_bp)
 
@@ -38,7 +40,7 @@ def create_app():
         "message" : "Authorization token is missing",
         "error" :  "unauthorized"
       }), 401
-    #set web related here
+                         
     return redirect("/")
 
   @jwt.invalid_token_loader
@@ -50,6 +52,13 @@ def create_app():
                   }), 401
       return redirect("/")
 
+
+  @app.errorhandler(Exception)
+  def handle_global_error(e):
+      app.logger.error(f"Unhandled Exception: {e}")
+      if request.path.startswith('/api/'):
+          return jsonify({"message": "An internal server error occurred."}), 500
+      return "An unexpected error occurred. Please try again later.", 500
 
   with app.app_context():
     # db.drop_all()

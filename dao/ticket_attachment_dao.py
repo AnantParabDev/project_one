@@ -1,6 +1,6 @@
 from config.database import db
 from models.ticket_attachment import TicketAttachment
-# from models.ticket import Ticket
+                                  
 
 class TicketAttachmentDAO:
 

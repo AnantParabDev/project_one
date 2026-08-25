@@ -1,6 +1,7 @@
 from config.database import db
 from models.comment import Comment
 
+
 class CommentDAO:
 
   def add_comment(self, comment):
@@ -17,8 +18,8 @@ class CommentDAO:
   def get_comment_by_user_id(self, u_id):
     return Comment.query.filter_by(user_id= u_id).all()
 
-  def get_comment_by_ticket_id(self, t_id):
-    return Comment.query.filter_by(ticket_id= t_id)
+  def get_comments_by_ticket_id(self, t_id):
+    return Comment.query.filter_by(ticket_id= t_id).all()
 
   def update_comment(self, comment):
     db.session.commit()

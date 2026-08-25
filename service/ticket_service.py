@@ -4,7 +4,7 @@ from models.ticket import Ticket
 from service import history_service
 from service.history_service import HistoryService
 from models.ticket_history import TicketHistory
-# from dao.ticket_dao import TicketDAO
+                                      
 
 history_service = HistoryService(HistoryDAO())
 
@@ -13,7 +13,17 @@ class TicketService:
     self.ticket_dao = dao
 
   def add_ticket(self, title, description, category_id, created_by, priority):
-    ticket=Ticket(title=title, description=description, category_id=category_id, created_by=created_by, priority=priority)
+    from datetime import datetime, timedelta
+    
+    due_date = None
+    if priority and priority.lower() == 'high':
+        due_date = datetime.now() + timedelta(days=1)
+    elif priority and priority.lower() == 'medium':
+        due_date = datetime.now() + timedelta(days=3)
+    else:
+        due_date = datetime.now() + timedelta(days=7)
+        
+    ticket=Ticket(title=title, description=description, category_id=category_id, created_by=created_by, priority=priority, due_date=due_date)
     return self.ticket_dao.add_ticket(ticket)
 
   def get_all_ticket(self, status=None, priority=None, assigned_to=None):

@@ -16,10 +16,10 @@ class TicketAttachmentDAO:
     return TicketAttachment.query.get(t_id)
 
   def get_ticket_attachment_by_ticket_id(self, t_id):
-    return TicketAttachment.query.get(t_id)
+    return TicketAttachment.query.filter_by(ticket_id=t_id).all()
 
   def get_ticket_attachment_by_user_id(self, u_id):
-    return TicketAttachment.query.filter_by(user_id= u_id)
+    return TicketAttachment.query.filter_by(uploaded_by=u_id).all()
 
   def get_by_title(self, title):
     return TicketAttachment.query.filter_by(title = title).first()

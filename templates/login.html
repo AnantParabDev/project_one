@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,13 @@
 
     <style>
         /* ---- Reset ------------------------------------------------- */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -141,52 +148,38 @@
 
     <div class="auth-card">
 
-        
+
         <div class="auth-logo">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9
-                         2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+                         2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" />
             </svg>
             <h1>IT Service Desk</h1>
             <p>Sign in to manage your support tickets</p>
         </div>
 
-        
+
         {% if error %}
-            <div class="error-msg">{{ error }}</div>
+        <div class="error-msg">{{ error }}</div>
         {% endif %}
 
-        
+
         <form action="/login" method="POST" novalidate>
 
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    placeholder="you@example.com"
-                    required
-                    autocomplete="email"
-                >
+                <input type="email" id="email" name="email" required autocomplete="email">
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
-                <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    placeholder="Enter your password"
-                    required
-                    autocomplete="current-password"
-                >
+                <input type="password" id="password" name="password" required autocomplete="current-password">
             </div>
 
             <button type="submit" class="btn-submit">Sign In</button>
         </form>
 
-        
+
         <div class="auth-footer">
             Don&rsquo;t have an account?
             <a href="/register">Register here</a>
@@ -195,4 +188,5 @@
     </div>
 
 </body>
+
 </html>

@@ -21,6 +21,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    send_from_directory,
 )
 from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
 from werkzeug.utils import secure_filename
@@ -40,11 +41,13 @@ from service.ticket_service import TicketService
                                                                              
                          
                                                                              
+from dao.ticket_attachment_dao import TicketAttachmentDAO
+
 ticket_service = TicketService(TicketDAO())
 category_service = CategoryService(CategoryDAO())
 comment_service = CommentService(CommentDAO())
 user_service = UserService(UserDAO())
-ticket_attachment_service = TicketAttachmentService(TicketDAO())
+ticket_attachment_service = TicketAttachmentService(TicketAttachmentDAO())
 history_service = HistoryService(HistoryDAO())
 
                            
@@ -246,6 +249,8 @@ def dashboard_page():
     role = claims.get("role")
     user_id = get_jwt_identity()
 
+    username = claims.get("username")
+
     stats = None
 
     if role == "ADMIN":
@@ -263,7 +268,7 @@ def dashboard_page():
         tickets = ticket_service.get_ticket_by_user_id(user_id)
 
     return render_template(
-        "dashboard.html", tickets=tickets, stats=stats, role=role
+        "dashboard.html", tickets=tickets, stats=stats, role=role, username=username, user_id=user_id
     )
 
 
@@ -294,6 +299,7 @@ def create_ticket_page():
 def ticket_detail_page(t_id):
     ticket = ticket_service.get_ticket_by_id(t_id)
     comments = comment_service.get_comments_by_ticket(t_id)
+    attachments = ticket_attachment_service.get_ticket_attachment_by_ticket_id(t_id)
     
     claims = get_jwt()
     role = claims.get('role')
@@ -302,7 +308,37 @@ def ticket_detail_page(t_id):
     if role == 'ADMIN':
         agents = [u for u in user_service.get_all_user() if u.roles and u.roles.roles == 'SUPPORT_AGENT']
         
-    return render_template('ticket_detail.html', ticket=ticket, comments=comments, role=role, agents=agents)
+    return render_template('ticket_detail.html', ticket=ticket, comments=comments, role=role, agents=agents, attachments=attachments)
+
+@ticket_bp.route('/uploads/<filename>', methods=['GET'])
+def download_file(filename):
+    """Serve uploaded files to the browser."""
+    return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
+
+@ticket_bp.route('/tickets/<int:t_id>/attachments_web', methods=['POST'])
+@jwt_required()
+def upload_file_web(t_id):
+    """Handle file uploads from the HTML form."""
+    if "file" not in request.files:
+        return redirect(f"/tickets/{t_id}")
+
+    file = request.files["file"]
+    if file.filename == "":
+        return redirect(f"/tickets/{t_id}")
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        save_path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
+        file.save(save_path)
+        uploaded_by = get_jwt_identity()
+
+        ticket_attachment_service.add_ticket_attachment(
+            file_name=filename,
+            file_path=save_path,
+            ticket_id=t_id,
+            uploaded_by=uploaded_by,
+        )
+    return redirect(f"/tickets/{t_id}")
 
 
 @ticket_bp.route('/tickets/<int:t_id>/assign_web', methods=['POST'])

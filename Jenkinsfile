@@ -27,7 +27,7 @@ pipeline {
                         echo "Skipping image build."
                         echo "true" > .skip_docker
                     else
-                        docker build -t seatmeup:latest .
+                        docker build -t flask_app:latest .
                         echo "false" > .skip_docker
                     fi
                 '''
@@ -41,7 +41,7 @@ pipeline {
                         echo "Skipping tests because Docker daemon is unavailable."
                     else
                         # Run pytest inside the built container so we don't need Python on the host
-                        docker run --rm seatmeup:latest sh -c "pip install pytest && python -m pytest || pytest"
+                        docker run --rm flask_app:latest sh -c "pip install pytest && python -m pytest || pytest"
                     fi
                 '''
             }
@@ -61,8 +61,8 @@ pipeline {
                                             echo "Skipping Docker Push because daemon is unavailable."
                                         else
                                             echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-                                            docker tag seatmeup:latest atreya7/seatmeup:latest
-                                            docker push atreya7/seatmeup:latest
+                                            docker tag flask_app:latest anantparab/flask_app:latest
+                                            docker push anantparab/flask_app:latest
                                         fi
                                     '''
                         }

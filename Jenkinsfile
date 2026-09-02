@@ -10,7 +10,7 @@ pipeline {
         stage('Installing Dependencies') {
             steps {
                 sh '''
-                    export PATH=$PATH:$HOME/.local/bin
+                    # export PATH=$PATH:$HOME/.local/bin
                     pip install --break-system-packages -r requirements.txt
                     pip install --break-system-packages pytest
                 '''

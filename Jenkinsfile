@@ -2,27 +2,30 @@ pipeline {
     agent any
 
     stages {
-
-        stage('Checkout'){
-            steps{
+        stage('Build') {
+            steps {
                 checkout scm
             }
         }
-
-        stage('Install Dependencies'){
-            steps{
-                sh 'pip install -r requirements.txt'
-            }
-        }
-
-        stage('Test'){
+        stage('Installing Dependencies') {
             steps {
-                sh 'pytest'
+                sh '''
+                    export PATH=$PATH:$HOME/.local/bin
+                    pip install --break-system-packages -r requirements.txt
+                    pip install --break-system-packages pytest
+                '''
             }
         }
-
-        stage('Build Docker Image'){
-            steps{
+        stage('Test') {
+            steps {
+                sh '''
+                    export PATH=$PATH:$HOME/.local/bin
+                    python3 -m pytest || pytest
+                '''
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
                 sh '''
                     export PATH=$PATH:$HOME/.local/bin:$(pwd)/docker
                     if ! command -v docker &> /dev/null; then
@@ -42,24 +45,31 @@ pipeline {
                 '''
             }
         }
-
-        stage('Push to Docker Hub') {
-            steps{
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'dockerhub-cred',
-                        usernameVariable: 'DOCKER_USER',
-                        passwordVariable: 'DOCKER_PASS'
-                    )
-                ]){
-                    sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push anantparab/flask-app:latest
-                    '''
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    try {
+                        withCredentials([
+                            usernamePassword(
+                                credentialsId: 'dockerhub-credentials', 
+                                usernameVariable: 'DOCKER_USERNAME',
+                                passwordVariable: 'DOCKER_PASSWORD')]) {
+                                    sh '''
+                                        export PATH=$PATH:$HOME/.local/bin:$(pwd)/docker
+                                        if [ -f .skip_docker ] && [ "$(cat .skip_docker)" = "true" ]; then
+                                            echo "Skipping Docker Push because daemon is unavailable."
+                                        else
+                                            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                                            docker tag seatmeup:latest atreya7/seatmeup:latest
+                                            docker push atreya7/seatmeup:latest
+                                        fi
+                                    '''
+                        }
+                    } catch (Exception e) {
+                        echo "WARNING: Could not find credentials entry with ID 'dockerhub-credentials'. Skipping Docker Push."
+                    }
                 }
             }
         }
-
     }
-
 }

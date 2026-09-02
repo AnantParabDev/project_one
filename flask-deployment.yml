@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: flask-deployment
+
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: flask
+  template:
+    metadata:
+      labels:
+        app: flask
+  
+    spec:
+      containers:
+        - name: flask
+          image: anantparab/flask-app:latest
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 5000
+
+          #Livenss & restarting unhealthy containers
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          
+          env:
+            - name: DB_URI #changed from MYSQL_DB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: DB_URI  #changed from MYSQL_DB_URI
+            - name: JWT_SECRET_KEY
+              value: "super-secrete-key"

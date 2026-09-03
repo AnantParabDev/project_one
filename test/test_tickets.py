@@ -5,7 +5,7 @@ def _auth_headers(client, email, role_id=1):
     token = get_token(client, email, 'pass123')
     return {'Authorization': f'Bearer {token}'}
 
-123def test_create_ticket_no_auth(client):
+def test_create_ticket_no_auth(client):
     resp = client.post('/api/tickets', json={'title': 'Test', 'description': 'desc', 'category_id': 1, 'priority': 'Low'})
     assert resp.status_code == 401
 

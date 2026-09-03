@@ -13,7 +13,6 @@ COPY dao/ ./dao/
 COPY models/ ./models/
 COPY service/ ./service/
 COPY templates/ ./templates/
-COPY utility/ ./utility/
 
 EXPOSE 5000
 

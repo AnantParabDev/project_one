@@ -77,11 +77,11 @@ pipeline {
     post {
         failure {
             mail to: 'anantparab1404@gmail.com',
-                 subject: "🚨 Jenkins Build Failed: ${currentBuild.fullDisplayName}",
+                 subject: "Jenkins Build Failed: ${currentBuild.fullDisplayName}",
                  body: "Your Jenkins pipeline has failed.\\n\\nPlease check the console output here to debug: ${env.BUILD_URL}"
         }
         success {
-            echo "✅ Build completed successfully! Image pushed to Docker Hub."
+            echo "Build completed successfully! Image pushed to Docker Hub."
         }
     }
 }

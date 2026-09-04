@@ -1,0 +1,47 @@
+services:
+  flask:
+    build: ./p_one/. #image: 
+    container_name: flask-app
+    ports:
+      - "5000:5000"
+    environment:
+      MYSQL_DB_URL : "mysql+pymysql://root:root@mysql:3306/testdb"
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+  
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+
+    ports:
+      - "9090:9090"
+
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    
+    depends_on:
+      - flask
+    
+    networks:
+      - app-network
+
+  mysql:
+    image: mysql:9.6.0
+    container_name: mysql_dbs
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: testdb
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - app-network
+
+volumes:
+  mysql-data:
+
+networks:
+  app-network:

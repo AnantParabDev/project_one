@@ -6,6 +6,7 @@ from controller.ticket_controller import ticket_bp
 from controller.category_controller import category_bp
 from flask_jwt_extended import JWTManager
 from controller.comment_controller import comment_bp
+from prometheus_flask_exporter import PrometheusMetrics
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -13,6 +14,16 @@ load_dotenv()
 def create_app():
     app = Flask(__name__)
     init_db(app)
+
+    metrics = PrometheusMetrics(app)
+
+
+    metrics.info(
+         'flask_app_info', 
+         "Flask Application Information",
+         version = "1.0.0"
+    )
+
     UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -26,6 +37,8 @@ def create_app():
     app.register_blueprint(comment_bp)
     app.register_blueprint(dashboard_bp)
     jwt = JWTManager(app)
+
+    
 
     @jwt.unauthorized_loader
     def missing_token_callback(err_string):
@@ -47,7 +60,18 @@ def create_app():
         return ('An unexpected error occurred. Please try again later.', 500)
     with app.app_context():
         db.create_all()
+    @app.route("/", method=["GET"])
+    def home() :
+        return "<h1>Home<h1>"
+    
+    
+
     return app
+
+
+
 if __name__ == '__main__':
     app = create_app()
     app.run(host='0.0.0.0', port=5000, debug=True)
+
+    

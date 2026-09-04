@@ -1,35 +1,37 @@
+version: '3.8'
+
 services:
-  flask:
-    build: ./p_one/. #image: 
+  flask-app:
+    build: .
     container_name: flask-app
     ports:
-      - "5000:5000"
+      - "5001:5000"
     environment:
-      MYSQL_DB_URL : "mysql+pymysql://root:root@mysql:3306/testdb"
+      FLASK_APP: app.py
+      FLASK_ENV: development
+      JWT_SECRET_KEY: super-secrete-key
+      DB_URI: "mysql+pymysql://root:root@mysql_db:3306/testdb"
     depends_on:
-      - mysql
+      mysql_db:
+        condition: service_healthy
     networks:
       - app-network
-  
+
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
-
     ports:
       - "9090:9090"
-
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    
     depends_on:
-      - flask
-    
+      - flask-app
     networks:
       - app-network
 
-  mysql:
-    image: mysql:9.6.0
-    container_name: mysql_dbs
+  mysql_db:
+    image: mysql:8.0
+    container_name: mysql_db
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: testdb
@@ -39,6 +41,12 @@ services:
       - mysql-data:/var/lib/mysql
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
 
 volumes:
   mysql-data:

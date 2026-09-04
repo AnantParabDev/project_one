@@ -13,11 +13,11 @@ COPY dao/ ./dao/
 COPY models/ ./models/
 COPY service/ ./service/
 COPY templates/ ./templates/
+COPY seed.py .
 
 EXPOSE 5000
 
-ENV FLASK_APP = app.python
-ENV FLASK_RUN_HOST = 0.0.0.0
+ENV FLASK_APP=app.py
+ENV FLASK_RUN_HOST=0.0.0.0
 
 CMD ["python", "app.py"]
-
